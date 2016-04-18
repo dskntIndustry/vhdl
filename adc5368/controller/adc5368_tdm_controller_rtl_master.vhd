@@ -31,10 +31,12 @@ architecture rtl_master of adc5368_tdm_controller is
 	signal i_raz_data_counter : std_ulogic;
 
 	signal i_data_counter: std_ulogic_vector(4 downto 0);
-	signal i_channel_counter: std_ulogic_vector(requiredBitNb(channelNb)-1 downto 0);
+	--signal i_channel_counter: std_ulogic_vector(requiredBitNb(channelNb)-1 downto 0);
 
-	signal i_temp_data_register : std_ulogic_vector(dataSlotBitNb-1 downto 0);
-	signal i_temp_n_data_register : std_ulogic_vector(dataSlotBitNb-1 downto 0);
+	signal i_data_register : std_ulogic_vector(dataSlotBitNb-1 downto 0);
+	signal i_data_register_n : std_ulogic_vector(dataSlotBitNb-1 downto 0);
+	--signal 
+
 	-- This goes in architecture declaration part!!!!!
 	-- Type of state machine.
 	-- Current and next state declaration.
@@ -67,17 +69,36 @@ architecture rtl_master of adc5368_tdm_controller is
 	data_counter:process(clock, reset)
 	begin
 		if reset = '1' then
-			i_data_counter <= (others => '0');
-
+			i_data_counter <= (others => '1');
 		elsif rising_edge(clock) then
-			if i_counter_flag = '1' then
+			if i_sclk = '0' and i_counter_flag = '1' then
 				i_data_counter <= std_ulogic_vector(unsigned(i_data_counter) + 1);
 			end if;
-			if i_raz_data_counter = '1' then
+			if i_sclk = '0' and i_raz_data_counter = '1' then
 				i_data_counter <= (others => '0');
 			end if;
 		end if;
 	end process data_counter; -- data_counter
+
+	sample_data:process(clock, reset)
+	begin
+		if reset = '1' then
+			i_data_register <= (others => '0');
+			i_data_register_n <= (others => '0');
+		elsif rising_edge(clock) then
+			if sclk = '1' then
+				report "Sclk rising" severity note;
+			--	if current_state /= wait_lrck then
+			--		if current_state /= init_state then
+						i_data_register(31-to_integer(unsigned(i_data_counter))) <= sdout1;
+						--if i_data_counter = "11111" then
+						--	i_data_register <= (others => '0');
+						--end if;
+			--		end if;		
+			--	end if;
+			end if;		
+		end if;
+	end process sample_data; -- sample_data
 
 	-- begin
 	sync_state_changer_identifier:process(clock, reset)
@@ -103,41 +124,45 @@ architecture rtl_master of adc5368_tdm_controller is
 			when init_state => 
 				-- statements
 				i_counter_flag <= '0';
-				i_temp_data_register <= (others => '0');
-				i_temp_n_data_register <= (others => '0');
 				i_raz_data_counter <= '0';	
 				next_state <= wait_lrck;
 
 			when wait_lrck =>
 				if i_lrck_rising = '1' then
 					i_counter_flag <= '1';
-					i_raz_data_counter <= '1';
+					i_raz_data_counter <= '0';
 					next_state <= channel1;
 					previous_state <= init_state;
 				end if;
 
 			when channel1 =>
-					if i_data_counter < "11111" then
+					
+					if i_data_counter < "11111" then						
 						i_raz_data_counter <= '0';
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						
+						
 						--i_data_counter <= (others => '1');
 						if previous_state = wait_lrck then
 							previous_state <= init_state;
 							next_state <= channel2;
 						else
+							sample1 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);
 							previous_state <= channel8;
 							next_state <= channel2;
 						end if;
 					end if;
 
 			when channel2 =>
+
 					if i_data_counter < "11111" then
 						i_raz_data_counter <= '0';
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample2 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);
 						--i_data_counter <= (others => '1');
 						previous_state <= channel1;
 						next_state <= channel3;
@@ -150,6 +175,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample3 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);
 						--i_data_counter <= (others => '1');
 						previous_state <= channel2;
 						next_state <= channel4;
@@ -161,6 +187,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample4 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);
 						--i_data_counter <= (others => '1');
 						previous_state <= channel3;
 						next_state <= channel5;
@@ -172,6 +199,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample5 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);						
 						--i_data_counter <= (others => '1');
 						previous_state <= channel4;
 						next_state <= channel6;
@@ -183,6 +211,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample6 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);						
 						--i_data_counter <= (others => '1');
 						previous_state <= channel5;
 						next_state <= channel7;
@@ -194,6 +223,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample7 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);						
 						--i_data_counter <= (others => '1');
 						previous_state <= channel6;
 						next_state <= channel8;
@@ -205,6 +235,7 @@ architecture rtl_master of adc5368_tdm_controller is
 					end if;	
 					if i_data_counter = "11111" then
 						i_raz_data_counter <= '1';
+						sample8 <= shift_right(signed(i_data_register(i_data_register'high downto i_data_register'high-signalBitNb+1)),1);
 						--i_data_counter <= (others => '1');
 						previous_state <= channel7;
 						next_state <= channel1;
@@ -229,6 +260,8 @@ architecture rtl_master of adc5368_tdm_controller is
 	mclk <= i_mclk;
 	i_sclk <= sclk;
 	i_lrck <= lrck;
+
+	sampleen <= i_raz_data_counter;
 
 	i_lrck_rising <= (lrck and not i_lrck_delayed);
 	i_lrck_falling <= (not lrck and i_lrck_delayed);
