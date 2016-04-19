@@ -6,7 +6,7 @@
 -- |_| |_|_____|____/     |____/ \___/     \_/ \__,_|_|\__,_|_|___/
 --
 -----------------------------------------------------------------------------
--- File			: SMP.Board.symbol
+-- File			: ADC.adc5368_tdm_controller.architecture
 -- Author		: Mikael Follonier
 -- Date 		: 20160408
 -- Brief		: TDM Mode for ADC5368 rtl view

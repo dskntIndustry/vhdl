@@ -6,7 +6,7 @@
 -- |_| |_|_____|____/     |____/ \___/     \_/ \__,_|_|\__,_|_|___/
 --
 -----------------------------------------------------------------------------
--- File		: SMP.Board.symbol
+-- File			: ADC.adc5368_sim_tdm.architecture
 -- Author		: Mikael Follonier
 -- Date 		: 20160408
 -- Brief		: ADC5368 simulator
