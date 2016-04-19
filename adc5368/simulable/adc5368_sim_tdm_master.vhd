@@ -1,12 +1,27 @@
+-----------------------------------------------------------------------------
+--  _   _ _____ ____       ____   ___   __     __    _       _
+-- | | | | ____/ ___|     / ___| / _ \  \ \   / /_ _| | __ _(_)___
+-- | |_| |  _| \___ \ ____\___ \| | | |  \ \ / / _` | |/ _` | / __|
+-- |  _  | |___ ___) |_____|__) | |_| |   \ V / (_| | | (_| | \__ \
+-- |_| |_|_____|____/     |____/ \___/     \_/ \__,_|_|\__,_|_|___/
 --
--- VHDL Architecture ADC.adc5368.sim_tdm_master
+-----------------------------------------------------------------------------
+-- File		: SMP.Board.symbol
+-- Author		: Mikael Follonier
+-- Date 		: 20160408
+-- Brief		: ADC5368 simulator
 --
--- Created:
---          by - uadmin.UNKNOWN (WE5182)
---          at - 14:32:21 12.04.2016
+-----------------------------------------------------------------------------
 --
--- using Mentor Graphics HDL Designer(TM) 2012.1 (Build 6)
+-- Features		:	
+--					
+--					
 --
+-- Limitations	:	
+-- 					
+--
+-----------------------------------------------------------------------------
+
 architecture sim_tdm_master of adc5368 is
 	
 	constant sclk_ratio : integer := 256;
@@ -53,13 +68,14 @@ begin
 		i_lrck_counter <= (others => '0');
 		i_lrck <= '0';
 	elsif rising_edge(clock) then
-		if mclk = '1' then
-			i_lrck_counter <= std_ulogic_vector(unsigned(i_lrck_counter)+1);
-			if i_lrck_counter = "0000000" then
-				i_lrck <= not i_lrck;
+		if enable = '1' then
+			if mclk = '1' then
+				i_lrck_counter <= std_ulogic_vector(unsigned(i_lrck_counter)+1);
+				if i_lrck_counter = "0000000" then
+					i_lrck <= not i_lrck;
+				end if;
 			end if;
 		end if;
-		--lrck <= i_lrck;
 	end if;
 end process lrck_gen; -- mclk_gen
 
@@ -72,20 +88,19 @@ begin
 		i_word <= (others => '0');
 		i_shift_flag <= '0';
 	elsif rising_edge(clock) then
-		if i_sclk = '0' then
-
-			i_ramp <= std_ulogic_vector(unsigned(i_ramp)+1);
-			i_word <= i_ramp&"00000000";
-			
-			--i_word <= X"DEADBE00";
-			--i_word <= X"00000001";
-			i_sdout1 <= i_word(i);
-			--sdout1 <= i_sdout1;
-			
-			if i >0 then
-				i:=i-1;
-			else
-				i := 31;
+		if enable = '1' then
+			if i_sclk = '0' then
+				i_ramp <= std_ulogic_vector(unsigned(i_ramp)+1);
+				i_word <= i_ramp&"00000000";
+				--i_word <= X"DEADBE00";
+				--i_word <= X"00000001";
+				i_sdout1 <= i_word(i);
+				--sdout1 <= i_sdout1;
+				if i >0 then
+					i:=i-1;
+				else
+					i := 31;
+				end if;
 			end if;
 		end if;
 	end if;

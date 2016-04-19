@@ -23,6 +23,7 @@ entity adc5368 is
       clock       : in     std_ulogic;
       dif0        : in     std_ulogic;
       dif1        : in     std_ulogic;
+      enable      : in     std_ulogic;
       lrck_gen_in : in     std_ulogic;
       m0          : in     std_ulogic;
       m1          : in     std_ulogic;
